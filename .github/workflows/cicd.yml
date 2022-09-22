@@ -38,6 +38,8 @@ jobs:
           expires: 1d
           projectId: "${{ env.FIREBASE_PROJECT_ID }}"
           channelId: dev
+    outputs:
+      preview-url: ${{ steps.firebase_preview.outputs.details_url }} 
   lighthouse-test:
     needs: build-deploy-preview
     runs-on: ubuntu-latest
@@ -49,7 +51,7 @@ jobs:
         id: lighthouseCheck
         with:
           outputDirectory: lighthouse-result
-          urls: "${{ steps.firebase_preview.outputs.urls }}"
+          urls: "${{ needs.build-deploy-preview.outputs.preview-url }}"
       - name: Upload artifacts
         uses: actions/upload-artifact@master
         with:
