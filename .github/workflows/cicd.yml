@@ -1,0 +1,70 @@
+name: Test then Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  FIREBASE_PROJECT_ID: office-sensors-27e21
+
+jobs:
+  build-deploy-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v2
+      - name: Setup node env 🏗
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+          cache: "npm"
+      - name: Install dependencies 👨🏻‍💻
+        run: npm ci
+      - name: Dependency checks
+        run: npm audit
+      - name: Build
+        run: npm run build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: web-artifact
+          path: dist
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: firebase-preview
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_OFFICE_SENSORS_27E21 }}"
+          expires: 1d
+          projectId: "${{ env.FIREBASE_PROJECT_ID }}"
+  lighthouse-test:
+    needs: build-deploy-preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make temp directory for lighthouse results
+        run: mkdir lighthouse-result
+      - name: Lighthouse
+        uses: foo-software/lighthouse-check-action@master
+        id: lighthouseCheck
+        with:
+          outputDirectory: lighthouse-result
+          urls: "${{ steps.firebase-preview.outputs.details_url }}"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: Lighthouse reports
+          path: lighthouse-result
+  deploy:
+    needs: lighthouse-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: web-artifact
+          path: dist
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_OFFICE_SENSORS_27E21 }}"
+          projectId: "${{ env.FIREBASE_PROJECT_ID }}"
+          channelId: live
