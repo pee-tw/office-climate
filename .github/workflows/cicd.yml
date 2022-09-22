@@ -57,10 +57,20 @@ jobs:
         with:
           name: Lighthouse reports
           path: lighthouse-result
+      - name: Verify Lighthouse Check results
+        uses: foo-software/lighthouse-check-status-action@master
+        with:
+          lighthouseCheckResults: ${{ steps.lighthouseCheck.outputs.lighthouseCheckResults }}
+          minAccessibilityScore: "90"
+          minBestPracticesScore: "90"
+          minPerformanceScore: "70"
+          minSeoScore: "80"
   deploy:
     needs: lighthouse-test
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v2
       - uses: actions/download-artifact@v3
         with:
           name: web-artifact
