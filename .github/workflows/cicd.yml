@@ -31,7 +31,7 @@ jobs:
           name: web-artifact
           path: dist
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-preview
+        id: firebase_preview
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_OFFICE_SENSORS_27E21 }}"
@@ -49,7 +49,7 @@ jobs:
         id: lighthouseCheck
         with:
           outputDirectory: lighthouse-result
-          urls: "${{ steps.firebase-preview.outputs.details_url }}"
+          urls: "${{ steps.firebase_preview.outputs.urls }}"
       - name: Upload artifacts
         uses: actions/upload-artifact@master
         with:
