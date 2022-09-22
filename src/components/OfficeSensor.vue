@@ -56,18 +56,21 @@ onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
       v-if="isCold"
       src="https://api.iconify.design/noto/cold-face.svg"
       width="128"
+      height="128"
       alt="Freezing"
     />
     <img
       v-if="isComfy"
       src="https://api.iconify.design/tabler/mood-happy.svg"
       width="128"
+      height="128"
       alt="Comfy"
     />
     <img
       v-if="isHot"
       src="https://api.iconify.design/fluent-emoji/hot-face.svg"
       width="128"
+      height="128"
       alt="Hot"
     />
     <h1>Temp: {{ state.temp }}</h1>
