@@ -1,0 +1,23 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NavBar from "../components/NavBar.astro";
+import OfficeSensor from "../components/OfficeSensor.vue";
+---
+<Layout title="Welcome to Office Sensors">
+  <main>
+    <NavBar />
+    <OfficeSensor client:load />
+  </main>
+</Layout>
+
+<style>
+  h1 {
+    margin: 2rem 0;
+  }
+
+  main {
+    margin: auto;
+    padding: 1em;
+    max-width: 60ch;
+  }
+</style>
