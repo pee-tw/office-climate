@@ -46,7 +46,7 @@ onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
   const { humidity, temperature, dateTime } = doc.data();
   state.temp = temperature;
   state.humidity = humidity;
-  state.lastUpdate = dayjs(dateTime.seconds * 1000).format("LTS");
+  state.lastUpdate = dayjs(dateTime.seconds * 1000).format("llll");
 });
 </script>
 
