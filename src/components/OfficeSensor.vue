@@ -39,7 +39,7 @@ const isHot = computed(() => {
 });
 
 const isComfy = computed(() => {
-  return !isHot && !isCold;
+  return !isHot.value && !isCold.value;
 });
 
 onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
@@ -61,7 +61,7 @@ onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
     />
     <img
       v-if="isComfy"
-      src="https://api.iconify.design/tabler/mood-happy.svg"
+      src="https://api.iconify.design/healthicons/happy-outline.svg"
       width="128"
       height="128"
       alt="Comfy"
