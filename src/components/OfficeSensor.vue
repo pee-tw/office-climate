@@ -51,7 +51,7 @@ onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center">
+  <div class="pt-10 flex flex-col items-center">
     <img
       v-if="isCold"
       src="https://api.iconify.design/noto/cold-face.svg"

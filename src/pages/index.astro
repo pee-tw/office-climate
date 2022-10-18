@@ -2,11 +2,13 @@
 import Layout from "../layouts/Layout.astro";
 import NavBar from "../components/NavBar.astro";
 import OfficeSensor from "../components/OfficeSensor.vue";
+import Outside from "../components/Outside"
 ---
 <Layout title="Welcome to Office Sensors">
   <main>
     <NavBar />
-    <OfficeSensor client:load />
+    <OfficeSensor client:idle />
+    <Outside client:only="react" />
   </main>
 </Layout>
 
