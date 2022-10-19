@@ -31,9 +31,6 @@ interface Metric {
 }
 
 const Outside = () => {
-  const locationKey = "3558711";
-  const apiKey = "q3yTIkBnN5qNfbzprZq2Ce4jzUH40GA4";
-
   const [weatherData, setWeatherData] = useState<WeatherResponse>(null);
 
   const sensorTemp = useStore(SensorTemp);
@@ -41,7 +38,7 @@ const Outside = () => {
   useEffect(() => {
     axios
       .get(
-        `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${apiKey}`
+        `https://asia-southeast1-office-sensors-27e21.cloudfunctions.net/weather`
       )
       .then(({ data }) => {
         const currentConditions = data[0] as WeatherResponse;
