@@ -6,6 +6,7 @@ import { computed, reactive } from "vue";
 
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import { SensorTemp } from "../store/sensor-temp";
 
 dayjs.extend(localizedFormat);
 
@@ -47,6 +48,8 @@ onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
   state.temp = temperature;
   state.humidity = humidity;
   state.lastUpdate = dayjs(dateTime.seconds * 1000).format("llll");
+
+  SensorTemp.set(temperature)
 });
 </script>
 

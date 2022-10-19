@@ -1,10 +1,11 @@
+import { useStore } from "@nanostores/react";
 import axios from "axios";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useEffect, useState } from "react";
+import { SensorTemp } from "../store/sensor-temp";
 
 dayjs.extend(localizedFormat);
-
 interface WeatherResponse {
   LocalObservationDateTime: string;
   EpochTime: number;
@@ -32,10 +33,10 @@ interface Metric {
 const Outside = () => {
   const locationKey = "3558711";
   const apiKey = "q3yTIkBnN5qNfbzprZq2Ce4jzUH40GA4";
-  const [temp, setTemp] = useState(0);
-  const [asOf, setAsof] = useState("");
-  const [weather, setWeather] = useState("");
-  const [weatherSrc, setWeatherSrc] = useState("");
+
+  const [weatherData, setWeatherData] = useState<WeatherResponse>(null);
+
+  const sensorTemp = useStore(SensorTemp);
 
   useEffect(() => {
     axios
@@ -44,23 +45,61 @@ const Outside = () => {
       )
       .then(({ data }) => {
         const currentConditions = data[0] as WeatherResponse;
-        setTemp(currentConditions.Temperature.Metric.Value);
-        setAsof(
-          dayjs(currentConditions.LocalObservationDateTime).format("LTS")
-        );
-        setWeather(currentConditions.WeatherText);
-        setWeatherSrc(currentConditions.MobileLink)
+        setWeatherData(currentConditions);
       });
   }, []);
 
+  if (!weatherData) return <></>;
+
+  const weatherIcon = () => {
+    const { WeatherIcon } = weatherData;
+    const iconNumberString =
+      WeatherIcon.toString().length === 1
+        ? `0${WeatherIcon}`
+        : WeatherIcon.toString();
+
+    return `https://developer.accuweather.com/sites/default/files/${iconNumberString}-s.png`;
+  };
+
+  const localTime = dayjs(weatherData.LocalObservationDateTime).format("LTS");
+
+  const isFresh = dayjs(weatherData.LocalObservationDateTime).isSame(
+    dayjs(),
+    "hour"
+  );
+
+  const outsideTemperature = weatherData.Temperature.Metric.Value;
+
+  const dayTimeString = weatherData.IsDayTime
+    ? "The sun is still shining"
+    : "The sun has set";
+
+  const tempDelta = Math.abs(sensorTemp - outsideTemperature);
+  const deltaStyle =
+    tempDelta > 10
+      ? {
+          color: "red",
+        }
+      : {};
+
   return (
-    <>
+    <div className="flex flex-col items-center">
       <h2 className="mt-3">The Weather Outside</h2>
-      <p>{weather}</p>
-      <p>Temp: {temp}</p>
-      <p>As of: {asOf}</p>
-      <a className="text-blue-500" href={weatherSrc}>Powered by</a>
-    </>
+      <img src={weatherIcon()} alt="" className="src" />
+      <p>It is: {weatherData.WeatherText}</p>
+      {weatherData.HasPrecipitation && <p>It is currently raining</p>}
+      <p>{dayTimeString}</p>
+      <p>Temp: {outsideTemperature}</p>
+      {isFresh && (
+        <p style={deltaStyle}>
+          The temperature difference is: {tempDelta.toFixed(2)}
+        </p>
+      )}
+      <p>As of: {localTime}</p>
+      <a className="text-blue-500" href={weatherData.MobileLink}>
+        Powered by AccuWeather
+      </a>
+    </div>
   );
 };
 
