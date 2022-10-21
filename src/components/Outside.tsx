@@ -6,28 +6,36 @@ import { useEffect, useState } from "react";
 import { SensorTemp } from "../store/sensor-temp";
 
 dayjs.extend(localizedFormat);
+
+
 interface WeatherResponse {
-  LocalObservationDateTime: string;
-  EpochTime: number;
-  WeatherText: string;
-  WeatherIcon: number;
-  HasPrecipitation: boolean;
-  PrecipitationType?: any;
-  IsDayTime: boolean;
   Temperature: Temperature;
-  MobileLink: string;
   Link: string;
+  PrecipitationType?: any;
+  EpochTime: number;
+  IsDayTime: boolean;
+  WeatherIcon: number;
+  WeatherText: string;
+  HasPrecipitation: boolean;
+  retrieved: Retrieved;
+  LocalObservationDateTime: string;
+  MobileLink: string;
+}
+
+interface Retrieved {
+  _seconds: number;
+  _nanoseconds: number;
 }
 
 interface Temperature {
-  Metric: Metric;
-  Imperial: Metric;
+  Imperial: Imperial;
+  Metric: Imperial;
 }
 
-interface Metric {
-  Value: number;
+interface Imperial {
   Unit: string;
   UnitType: number;
+  Value: number;
 }
 
 const Outside = () => {
@@ -41,7 +49,7 @@ const Outside = () => {
         `https://asia-southeast1-office-sensors-27e21.cloudfunctions.net/weather`
       )
       .then(({ data }) => {
-        const currentConditions = data[0] as WeatherResponse;
+        const currentConditions = data as WeatherResponse;
         setWeatherData(currentConditions);
       });
   }, []);

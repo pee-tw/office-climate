@@ -49,32 +49,38 @@ onSnapshot(doc(db, "office-climate-latest", "latest"), (doc) => {
   state.humidity = humidity;
   state.lastUpdate = dayjs(dateTime.seconds * 1000).format("llll");
 
-  SensorTemp.set(temperature)
+  SensorTemp.set(temperature);
+});
+
+const iconsConfig = {
+  isCold: {
+    url: "https://api.iconify.design/noto/cold-face.svg",
+    alt: "Freezing",
+  },
+  isComfy: {
+    url: "https://api.iconify.design/healthicons/happy-outline.svg",
+    alt: "Comfy",
+  },
+  isHot: {
+    url: "https://api.iconify.design/fluent-emoji/hot-face.svg",
+    alt: "Hot",
+  },
+};
+
+const currentIcon = computed(() => {
+  if (isCold.value) return iconsConfig.isCold;
+  if (isComfy.value) return iconsConfig.isComfy;
+  if (isHot.value) return iconsConfig.isHot;
 });
 </script>
 
 <template>
   <div class="pt-10 flex flex-col items-center">
     <img
-      v-if="isCold"
-      src="https://api.iconify.design/noto/cold-face.svg"
+      :src="currentIcon.url"
       width="128"
       height="128"
-      alt="Freezing"
-    />
-    <img
-      v-if="isComfy"
-      src="https://api.iconify.design/healthicons/happy-outline.svg"
-      width="128"
-      height="128"
-      alt="Comfy"
-    />
-    <img
-      v-if="isHot"
-      src="https://api.iconify.design/fluent-emoji/hot-face.svg"
-      width="128"
-      height="128"
-      alt="Hot"
+      :alt="currentIcon.alt"
     />
     <h1>Temp: {{ state.temp }}</h1>
     <h1>Humidity: {{ state.humidity }}</h1>
