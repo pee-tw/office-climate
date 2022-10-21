@@ -10,17 +10,15 @@ describe("Outside", () => {
   });
   it("the title is visible", async () => {
     const mockedResponse = {
-      data: [
-        {
-          WeatherIcon: 1,
-          WeatherText: "Sunny",
-          Temperature: {
-            Metric: {
-              Value: 30,
-            },
+      data: {
+        WeatherIcon: 1,
+        WeatherText: "Sunny",
+        Temperature: {
+          Metric: {
+            Value: 30,
           },
         },
-      ],
+      },
     };
 
     vi.spyOn(axios, "get").mockResolvedValue(mockedResponse);

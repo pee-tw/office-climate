@@ -2,6 +2,14 @@
 
 This project is a part of experiment with realtime data and experimenting with Astro.
 
+## esp32
+ESP32 code can be found under esp32 folder
+
+## Firebase Cloud functions
+The backend code can be found under functions.
+
+Note: CI/CD has not been setup for Cloud Functions
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
