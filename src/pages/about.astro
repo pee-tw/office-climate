@@ -2,12 +2,29 @@
 import Layout from "../layouts/Layout.astro";
 import NavBar from "../components/NavBar.astro";
 
-const DHTShopLink =
-  "https://shopee.co.th/DHT11-DHT-11-%E0%B9%82%E0%B8%A1%E0%B8%94%E0%B8%B9%E0%B8%A5%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AD%E0%B8%B8%E0%B8%93%E0%B8%AB%E0%B8%A0%E0%B8%B9%E0%B8%A1%E0%B8%B4%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%99%E0%B8%AA%E0%B8%B3%E0%B8%AB%E0%B8%A3%E0%B8%B1%E0%B8%9A-Arduino-Nodemcu-%E0%B8%A1%E0%B8%B5%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A1%E0%B8%AA%E0%B9%88%E0%B8%87%E0%B8%97%E0%B8%B1%E0%B8%99%E0%B8%97%E0%B8%B5-!!!!!-i.117988183.1902844635?sp_atk=41859968-1d97-49e9-b27b-b0c4ebfe9ce5&xptdk=41859968-1d97-49e9-b27b-b0c4ebfe9ce5";
-const ESPShopLink =
-  "https://shopee.co.th/ESP32-WiFi-Node32s-ESP-32-ESP-32S-NodeMCU-ESP-WROOM-32-WiFi-Bluetooth-i.117988183.2053436592?sp_atk=e435f6f8-1c20-42e2-8acb-7d9b30da91df&xptdk=e435f6f8-1c20-42e2-8acb-7d9b30da91df";
-const PIRShopLink =
-  "https://shopee.co.th/HC-SR-501-Infrared-PIR-Motion-Sensor-%E0%B8%AA%E0%B8%B3%E0%B8%AB%E0%B8%A3%E0%B8%B1%E0%B8%9A-Arduino-%E0%B8%A1%E0%B8%B5%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A1%E0%B8%AA%E0%B9%88%E0%B8%87%E0%B8%97%E0%B8%B1%E0%B8%99%E0%B8%97%E0%B8%B5!!!!!!!!-i.117988183.2010626903?sp_atk=24fb742d-036d-423e-9acc-4f7cfbd2b70d&xptdk=24fb742d-036d-423e-9acc-4f7cfbd2b70d";
+const components = [
+  {
+    desc: "ESP32: Internet connected microcontroller",
+    price: 198,
+    url: "https://shopee.co.th/ESP32-WiFi-Node32s-ESP-32-ESP-32S-NodeMCU-ESP-WROOM-32-WiFi-Bluetooth-i.117988183.2053436592?sp_atk=e435f6f8-1c20-42e2-8acb-7d9b30da91df&xptdk=e435f6f8-1c20-42e2-8acb-7d9b30da91df",
+  },
+  {
+    desc: "DHT11: Digital Humiditiy and Temperature sensor",
+    price: 38,
+    url: "https://shopee.co.th/DHT11-DHT-11-%E0%B9%82%E0%B8%A1%E0%B8%94%E0%B8%B9%E0%B8%A5%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AD%E0%B8%B8%E0%B8%93%E0%B8%AB%E0%B8%A0%E0%B8%B9%E0%B8%A1%E0%B8%B4%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%99%E0%B8%AA%E0%B8%B3%E0%B8%AB%E0%B8%A3%E0%B8%B1%E0%B8%9A-Arduino-Nodemcu-%E0%B8%A1%E0%B8%B5%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A1%E0%B8%AA%E0%B9%88%E0%B8%87%E0%B8%97%E0%B8%B1%E0%B8%99%E0%B8%97%E0%B8%B5-!!!!!-i.117988183.1902844635?sp_atk=41859968-1d97-49e9-b27b-b0c4ebfe9ce5&xptdk=41859968-1d97-49e9-b27b-b0c4ebfe9ce5",
+  },
+  {
+    desc: "MC-38: Magnetic Switch",
+    price: 21,
+    url: "https://shopee.co.th/MC-38-%E0%B8%AA%E0%B8%A7%E0%B8%B4%E0%B8%95%E0%B8%8B%E0%B9%8C%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B9%80%E0%B8%AB%E0%B8%A5%E0%B9%87%E0%B8%81%E0%B8%95%E0%B8%B4%E0%B8%94%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%95%E0%B8%B9-Door-Reed-switch-Lead-Switch-Sensor%E0%B8%95%E0%B8%A3%E0%B8%A7%E0%B8%88%E0%B8%88%E0%B8%B1%E0%B8%9A%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B9%80%E0%B8%AB%E0%B8%A5%E0%B9%87%E0%B8%81-%E0%B8%A1%E0%B8%B5%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A1%E0%B8%AA%E0%B9%88%E0%B8%87%E0%B8%97%E0%B8%B1%E0%B8%99%E0%B8%97%E0%B8%B5-i.677015666.18342984782?sp_atk=2665f755-51b2-4bcc-b943-7f86f86a265c&xptdk=2665f755-51b2-4bcc-b943-7f86f86a265c",
+  },
+  {
+    desc: "Piezo buzzer (12085)",
+    price: 8,
+    url: "https://shopee.co.th/12085-Passive-Buzzer-Electromagnetic-Mono-Tone-Piezo-Speaker-16R-%E0%B8%A5%E0%B8%B3%E0%B9%82%E0%B8%9E%E0%B8%87-%E0%B8%9A%E0%B8%B1%E0%B8%AA%E0%B9%80%E0%B8%8B%E0%B8%AD%E0%B8%A3%E0%B9%8C-%E0%B9%82%E0%B8%A1%E0%B9%82%E0%B8%99%E0%B9%82%E0%B8%97%E0%B8%99-%E0%B9%80%E0%B8%9B%E0%B8%B5%E0%B8%A2%E0%B9%82%E0%B8%8B-%E0%B8%9A%E0%B8%B5%E0%B8%9B-i.76886102.20101208611?sp_atk=47ae5eb1-affc-4e5d-b8fc-2879c99d8bdb&xptdk=47ae5eb1-affc-4e5d-b8fc-2879c99d8bdb",
+  },
+];
+
 const repoLink = "https://github.com/pee-tw/office-climate";
 ---
 
@@ -15,7 +32,10 @@ const repoLink = "https://github.com/pee-tw/office-climate";
   <main>
     <NavBar />
     <h2 class="mt-3">What's this project about?</h2>
-    <h3 class="mt-3">Main motivation: It's freezing in the office</h3>
+    <h3 class="mt-3">
+      Main motivation: It's freezing in the office and people often forget to
+      make sure to close the office door
+    </h3>
     <h3 class="mt-3">Secondary motivations, I want to...</h3>
     <ul class="mt-3 list-disc ml-5">
       <li>have streaming datasource for Data Engineer training</li>
@@ -25,26 +45,37 @@ const repoLink = "https://github.com/pee-tw/office-climate";
         ><br />
         <p>
           The repo for this web is <a href={repoLink} class="text-blue-700"
-            >here</a>
+            >here</a
+          >
         </p>
-        <p>Note: ESP32 code can also be found under esp32 folder in this repository</p>
+        <p>
+          Note: ESP32 code can also be found under esp32 folder in this
+          repository
+        </p>
       </li>
       <li>inspire others to play around with physical sensors</li>
     </ul>
+    <h3 class="mt-3">
+      The temperature sensors reports back to Firebase Cloud Function when
+      there's a change in temparature or humidity every one minute
+    </h3>
+    <h3 class="mt-3">
+      The magnetic switch starts working after office hours, it make noises
+      after a certain period of time has passed and send a message to Google
+      Chat when enough time has elapsed
+    </h3>
     <h2 class="mt-5">What kind of hardware is involve in this project?</h2>
     <ul class="mt-3 list-disc ml-5">
-      <li>
-        ESP32: Internet connected microcontroller <br />
-        <a class="text-blue-700" href={ESPShopLink}>Shop here (198 Baht)</a>
-      </li>
-      <li>
-        PIR: Infrared sensor<br />
-        <a class="text-blue-700" href={PIRShopLink}>Shop here (38 Baht)</a>
-      </li>
-      <li>
-        DHT11: Digital Humiditiy and Temperature sensor<br />
-        <a class="text-blue-700" href={DHTShopLink}>Shop here (38 Baht)</a>
-      </li>
+      {
+        components.map((item) => (
+          <li>
+            {item.desc} <br />
+            <a class="text-blue-700" href={item.url}>
+              Shop here ({item.price} Baht)
+            </a>
+          </li>
+        ))
+      }
     </ul>
     <img src="/office-sensors.jpg" class="p-5" alt="sensors" />
   </main>
