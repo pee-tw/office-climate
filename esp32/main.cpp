@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
+#include "time.h"
 #include "pitches.h"
 
 
@@ -17,8 +18,8 @@ WiFiClientSecure httpsClient;
 const char *ssid = "Replace me with actual ssid";                       //  your network SSID (name)
 const char *password = "Replace me with actual password";  // your network password
 
-int timezone = 0 * 3600L;  // Setting timezone offset (doesn't work)
-int dst = 0;               //กำหนดค่า Date Swing TimeZone
+int timezone = 7 * 3600L; // Thailand is on GMT+7
+int dst = 0;
 
 String apiKey = "Replace me with actual api key";
 String cloudFunctionUrl = "Replace me with cloud function url";
@@ -28,15 +29,15 @@ float h = 0;
 float t = 0;
 const int morningHour = 6;
 const int eveningHour = 18;
-unsigned long previousMillisTemp = 0;  // last time update
-unsigned long previousMillisDoor = 0;  // last time update
-long interval = 1000 * 60;             // interval at which to do something (milliseconds)
-long alarmInterval = 1000 * 30;        // interval at which to do something (milliseconds)
+unsigned long previousMillisTemp = 0;
+unsigned long previousMillisDoor = 0;
+long interval = 1000 * 60;
+long alarmInterval = 1000 * 30;
 long sendMsgInterval = 1000 * 60 * 5;
-int doorState;
-int prevDoorState;
+int prevDoorState = LOW;
 int wiFiRetryThreshold = 10;
 int wiFiRetryCount = 0;
+struct tm timeinfo;
 
 void ensureWiFi() {
   while (WiFi.status() != WL_CONNECTED) {
@@ -73,13 +74,20 @@ void startUpSound() {
   }
 }
 
-void alertSound() {
+void lunchMelody() {
+  int currentHour = timeinfo.tm_hour;
+  int currentMin = timeinfo.tm_min;
+
+  if (currentHour != 12 || currentMin != 0) {
+    return;
+  }
+
   int melody[] = {
-    NOTE_G6
+    NOTE_F4, NOTE_A4, NOTE_G4, NOTE_C4, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_F4
   };
 
   int noteDurations[] = {
-    4
+    4, 4, 4, 4, 4, 4, 4, 2
   };
 
   for (int thisNote = 0; thisNote < 8; thisNote++) {
@@ -90,6 +98,17 @@ void alertSound() {
     delay(pauseBetweenNotes);
     noTone(BUZZER_PIN);
   }
+
+  delay(1000 * 60);
+}
+
+void alertSound() {
+  int noteDuration = 1000 / 4;
+  tone(BUZZER_PIN, NOTE_G6, noteDuration);
+
+  int pauseBetweenNotes = noteDuration * 1.30;
+  delay(pauseBetweenNotes);
+  noTone(BUZZER_PIN);
 }
 
 void setup() {
@@ -119,27 +138,32 @@ void setup() {
   httpsClient.setInsecure();
   httpsClient.setTimeout(5000);
 
-  http.addHeader("x-api-key", apiKey);
   http.addHeader("Content-Type", "application/json");
+
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return;
+  }
 
   Serial.println("Setup finished!");
   startUpSound();
 }
 
 void loop() {
-  measureTemperature();
   checkDoor();
+  measureTemperature();
+  lunchMelody();
 }
 
-void AlertToChat() {
+void alertToChat() {
   ensureWiFi();
 
   Serial.println("Posting to chat");
   http.begin(httpsClient, gChatUrl);
 
-  String text = "Office door has been opened outside of office hour exceeding alarm threshold, please check if door is properly closed";
+  String text = "\"Office door has been opened outside of office hour exceeding alarm threshold, please check if door is properly closed\"";
 
-  String payload = "{\"text\":" + (String)text + "}";
+  String payload = "{\"text\":" + text + "}";
 
   int httpResponseCode = http.POST(payload);
 
@@ -150,46 +174,50 @@ void AlertToChat() {
   }
 }
 void checkDoor() {
-  time_t now = time(nullptr);
-  struct tm *p_tm = localtime(&now);
-  int currentHour = p_tm->tm_hour + 7;
+  int currentHour = timeinfo.tm_hour;
 
-  // Not in office hours
-  if (currentHour < morningHour || currentHour > eveningHour) {
-    doorState = digitalRead(DOOR_SENSOR_PIN);  // read state
+  // Office hour guard
+  if (currentHour > morningHour && currentHour < eveningHour) {
+    Serial.println('Not in office hour, skipping');
+    return;
+  }
 
-    if (doorState == HIGH) {
-      Serial.println("The door is open, turns on Piezo Buzzer");
-      unsigned long currentMillis = millis();
+  int doorState = digitalRead(DOOR_SENSOR_PIN);  // read state
 
-      if (prevDoorState == LOW) {
-        previousMillisDoor = millis();
-        prevDoorState = HIGH;
-      }
+  if (doorState == HIGH) {
+    Serial.println("The door is open, turns on Piezo Buzzer");
+    unsigned long currentMillis = millis();
 
-      if (currentMillis - previousMillisDoor < alarmInterval) {
-        Serial.println("Alarm threshold not reached");
-        return;
-      }
-
-      if (currentMillis - previousMillisDoor > sendMsgInterval) {
-        Serial.println("Send message to chat group");
-      }
-
-      digitalWrite(BUZZER_PIN, HIGH);  // turn on Piezo Buzzer
-    } else {
-      Serial.println("The door is closed, turns off Piezo Buzzer");
-      digitalWrite(BUZZER_PIN, LOW);  // turn off Piezo Buzzer
-      prevDoorState = LOW;
+    if (prevDoorState == LOW) {
       previousMillisDoor = millis();
+      prevDoorState = HIGH;
     }
+
+    if (currentMillis - previousMillisDoor < alarmInterval) {
+      Serial.println("Alarm threshold not reached");
+      delay(1000);
+      return;
+    }
+
+    if (currentMillis - previousMillisDoor > sendMsgInterval) {
+      Serial.println("Send message to chat group");
+      alertToChat();
+      delay(1000 * 60 * 60 * 12);
+    }
+
+    alertSound();
+  } else {
+    Serial.println("The door is closed, turns off Piezo Buzzer");
+    digitalWrite(BUZZER_PIN, LOW);  // turn off Piezo Buzzer
+    prevDoorState = LOW;
+    previousMillisDoor = millis();
   }
 }
 
 void measureTemperature() {
   if (isnan(h) || isnan(t)) {
     Serial.println(F("Failed to read from DHT sensor!"));
-    delay(1000);
+    ESP.restart();
     return;
   }
 
@@ -218,6 +246,8 @@ void measureTemperature() {
     ensureWiFi();
 
     Serial.println("Posting to officeClimate");
+
+    http.addHeader("x-api-key", apiKey);
     http.begin(httpsClient, cloudFunctionUrl);
 
     String temperature = "{\"temperature\":" + (String)t + ",";
