@@ -2,9 +2,10 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
-#include "time.h"
+#include <WiFiUdp.h>
+#include <ArduinoJson.h>
 #include "pitches.h"
-
+#include <NTPClient.h>
 
 #define BUZZER_PIN 21
 #define DOOR_SENSOR_PIN 23
@@ -15,29 +16,33 @@ DHT dht(DHTPIN, DHTTYPE);
 HTTPClient http;
 WiFiClientSecure httpsClient;
 
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
 const char *ssid = "Replace me with actual ssid";                       //  your network SSID (name)
-const char *password = "Replace me with actual password";  // your network password
+const char *password = "Replace me with actual password";
 
-int timezone = 7 * 3600L; // Thailand is on GMT+7
-int dst = 0;
+String apiKey = "<Removed for obvious reasons>";
+String cloudFunctionUrl = "https://asia-southeast1-office-sensors-27e21.cloudfunctions.net/officeClimate";
+String gChatUrl = "<Secrets included in the url>";
 
-String apiKey = "Replace me with actual api key";
-String cloudFunctionUrl = "Replace me with cloud function url";
-String gChatUrl = "Replace me with webhook url with tokens";
-
-float h = 0;
-float t = 0;
 const int morningHour = 6;
 const int eveningHour = 18;
+int lunchDay = 0;
+int alarmDay = 0;
 unsigned long previousMillisTemp = 0;
 unsigned long previousMillisDoor = 0;
 long interval = 1000 * 60;
 long alarmInterval = 1000 * 30;
-long sendMsgInterval = 1000 * 60 * 5;
+long sendMsgInterval = 1000 * 60 * 3;
 int prevDoorState = LOW;
 int wiFiRetryThreshold = 10;
+
 int wiFiRetryCount = 0;
-struct tm timeinfo;
+int currentDay = 0;
+float h = 0;
+float t = 0;
+// struct tm timeinfo;
 
 void ensureWiFi() {
   while (WiFi.status() != WL_CONNECTED) {
@@ -75,10 +80,14 @@ void startUpSound() {
 }
 
 void lunchMelody() {
-  int currentHour = timeinfo.tm_hour;
-  int currentMin = timeinfo.tm_min;
+  // int currentHour = timeinfo.tm_hour;
+  // int currentMin = timeinfo.tm_min;
+  // int currentDay = timeinfo.tm_mday;
+  int currentHour = timeClient.getHours();
+  int currentMin = timeClient.getMinutes();
 
-  if (currentHour != 12 || currentMin != 0) {
+
+  if (currentHour != 12 || currentMin != 0 || currentDay == lunchDay) {
     return;
   }
 
@@ -99,7 +108,7 @@ void lunchMelody() {
     noTone(BUZZER_PIN);
   }
 
-  delay(1000 * 60);
+  lunchDay = currentDay;
 }
 
 void alertSound() {
@@ -128,31 +137,42 @@ void setup() {
   pinMode(DHTPIN, INPUT);
 
   ensureWiFi();
-  configTime(timezone, dst, "time1.nimt.or.th", "ntp.ku.ac.th", "itoml.live.rmutt.ac.th");
+  // configTime(timezone, dst, "pool.ntp.org");
+  timeClient.begin();
+  timeClient.setTimeOffset(7 * 3600);
 
-  while (!time(nullptr)) {
-    Serial.print("*");
-    delay(1000);
-  }
+  // while (!time(nullptr)) {
+  //   Serial.print("*");
+  //   delay(1000);
+  // }
 
   httpsClient.setInsecure();
   httpsClient.setTimeout(5000);
 
   http.addHeader("Content-Type", "application/json");
 
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
-    return;
-  }
+  // if (!getLocalTime(&timeinfo)) {
+  //   Serial.println("Failed to obtain time");
+  //   ESP.restart();
+  // }
 
   Serial.println("Setup finished!");
   startUpSound();
 }
 
 void loop() {
+  timeSync();
   checkDoor();
   measureTemperature();
   lunchMelody();
+}
+
+void timeSync() {
+  timeClient.update();
+  
+  time_t epochTime = timeClient.getEpochTime();
+  struct tm *ptm = gmtime ((time_t *)&epochTime); 
+  currentDay = ptm->tm_mday;
 }
 
 void alertToChat() {
@@ -161,24 +181,32 @@ void alertToChat() {
   Serial.println("Posting to chat");
   http.begin(httpsClient, gChatUrl);
 
-  String text = "\"Office door has been opened outside of office hour exceeding alarm threshold, please check if door is properly closed\"";
+  // https://arduinojson.org/v6/example/generator/ Size calculated here
+  StaticJsonDocument<147> doc;
 
-  String payload = "{\"text\":" + text + "}";
+  String json;
+  doc["text"] = "Office door has been opened outside of office hour exceeding alarm threshold, please check if door is properly closed";
+  serializeJson(doc, json);
 
-  int httpResponseCode = http.POST(payload);
+  int httpResponseCode = http.POST(json);
 
   if (httpResponseCode < 200 || httpResponseCode >= 400) {
     Serial.println('Failed to post to chat');
   } else {
     Serial.println('Post to chat');
+    delay(1000 * 60 * 60 * 12); // Pause for 12 hours
   }
 }
 void checkDoor() {
-  int currentHour = timeinfo.tm_hour;
+  int currentHour = timeClient.getHours();
 
   // Office hour guard
   if (currentHour > morningHour && currentHour < eveningHour) {
     Serial.println('Not in office hour, skipping');
+    return;
+  }
+  // Message sent guard
+  if (alarmDay == currentDay) {
     return;
   }
 
@@ -202,7 +230,7 @@ void checkDoor() {
     if (currentMillis - previousMillisDoor > sendMsgInterval) {
       Serial.println("Send message to chat group");
       alertToChat();
-      delay(1000 * 60 * 60 * 12);
+      alarmDay = currentDay;
     }
 
     alertSound();
